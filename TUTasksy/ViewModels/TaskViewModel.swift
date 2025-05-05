@@ -10,6 +10,7 @@ struct TaskCard: Identifiable {
     let username: String
     let imageUrl: String?
     let status: String
+    let nickname: String
 }
 
 class TaskViewModel: ObservableObject {
@@ -34,7 +35,8 @@ class TaskViewModel: ObservableObject {
                         date: (data["date"] as? Timestamp)?.dateValue() ?? Date(),
                         username: data["username"] as? String ?? "",
                         imageUrl: data["imageUrl"] as? String,
-                        status: data["status"] as? String ?? "Available"
+                        status: data["status"] as? String ?? "Available",
+                        nickname: "not set yet"
                     )
                 }
             }
