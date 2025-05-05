@@ -16,13 +16,13 @@ extension Color {
 }
 
 struct LoginView: View {
-    @State private var showHome = false
     @State private var studentid = ""
     @State private var password = ""
     @StateObject private var viewModel = LoginViewModel()
+    @State private var navigationPath = NavigationPath()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             ZStack {
                 Color(hex: "#CAE5FF").ignoresSafeArea()
 
@@ -47,7 +47,6 @@ struct LoginView: View {
                             .foregroundColor(Color(hex: "#C77A17"))
                             .font(.title2)
                             .fontWeight(.semibold)
-                            //.padding(.top)
 
                         SecureField("Password", text: $password)
                             .padding()
@@ -58,7 +57,6 @@ struct LoginView: View {
                             ProgressView()
                         }
                         
-                        //Spacer()
                         Button(action: {
                             viewModel.loginWithTuApi(studentid: studentid, password: password)
                         }) {
@@ -78,7 +76,6 @@ struct LoginView: View {
                                 .foregroundColor(.red)
                                 .padding(.top, 5)
                         }
-
                     }
                     .padding()
                     .background(Color(hex: "#FFFAED"))
@@ -86,15 +83,17 @@ struct LoginView: View {
                     .frame(width: 350, height: 450)
                 }
             }
-            .navigationDestination(isPresented: $showHome) {
+            .navigationDestination(for: String.self) { destination in
+                if destination == "home" {
                     HomeView()
-                }
-            .onChange(of: viewModel.isLoggedIn) {
-                if viewModel.isLoggedIn {
-                    showHome = true
+                        .navigationBarBackButtonHidden(true)
                 }
             }
-
+            .onChange(of: viewModel.isLoggedIn) {
+                if viewModel.isLoggedIn {
+                    navigationPath.append("home")
+                }
+            }
         }
     }
 }
