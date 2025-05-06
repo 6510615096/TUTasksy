@@ -9,3 +9,8 @@ struct UserInfo: Codable {
     let department: String
     let faculty: String
 }
+
+struct Response: Decodable {
+    let token: String
+    let userInfo: UserInfo
+}
