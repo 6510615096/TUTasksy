@@ -20,6 +20,7 @@ struct LoginView: View {
     @State private var password = ""
     @StateObject private var viewModel = LoginViewModel()
     @State private var navigationPath = NavigationPath()
+    //@AppStorage("isLoggedIn") var isLoggedIn: Bool = false
 
     var body: some View {
         NavigationStack(path: $navigationPath) {

@@ -18,6 +18,8 @@ struct ProfileTabView: View {
     @State private var profileImage: UIImage? = nil
 
     @FocusState private var focusedField: Field?
+    
+    @AppStorage("isLoggedIn") var isLoggedIn: Bool = true
 
     enum Field: Hashable {
         case username
@@ -106,6 +108,19 @@ struct ProfileTabView: View {
                     .padding(.horizontal)
 
                     Spacer()
+                    
+                    Button(action: {
+                        do {
+                            try Auth.auth().signOut()
+                            isLoggedIn = false
+                        } catch let signOutError as NSError {
+                            print("Error signing out: %@", signOutError)
+                        }
+                    }) {
+                        Text("Logout")
+                            .foregroundColor(.red)
+                    }
+
                 }
             }
             .background(Color(hex: "#FFFAED").ignoresSafeArea())

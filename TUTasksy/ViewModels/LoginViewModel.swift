@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 
@@ -6,7 +7,9 @@ import FirebaseFirestore
 class LoginViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var loginMessage = ""
-    @Published var isLoggedIn = false
+    //@Published var isLoggedIn = false
+    @AppStorage("isLoggedIn") var isLoggedIn: Bool = false
+
 
     func loginWithTuApi(studentid: String, password: String) {
         isLoading = true
@@ -65,6 +68,7 @@ class LoginViewModel: ObservableObject {
                             self.loginMessage = "Firebase login error: \(error.localizedDescription)"
                             self.isLoading = false
                         } else {
+                            self.isLoggedIn = true
                             self.saveUserData(userInfo: decoded.userInfo)
                         }
                     }
