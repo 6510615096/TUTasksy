@@ -13,6 +13,9 @@ struct CreateTaskView: View {
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var userNickname = ""
     @Environment(\.dismiss) var dismiss
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+
     
     private var today: String {
         let formatter = DateFormatter()
@@ -145,7 +148,12 @@ struct CreateTaskView: View {
         .onAppear {
             fetchUserNickname()
         }
+        .alert(isPresented: $showAlert) {
+            Alert(title: Text("Task Status"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+        }
+
     }
+    
 
     func uploadTask() {
         guard !title.isEmpty, !description.isEmpty, !reward.isEmpty else { return }
@@ -184,9 +192,11 @@ struct CreateTaskView: View {
                 db.collection("tasks").addDocument(data: taskData) { error in
                     isUploading = false
                     if let error = error {
-                        print("Error uploading task: \(error)")
+                        alertMessage = "Error uploading task: \(error.localizedDescription)"
+                        showAlert = true
                     } else {
-                        print("Task uploaded successfully!")
+                        alertMessage = "Task uploaded successfully!"
+                        showAlert = true
                         title = ""
                         description = ""
                         reward = ""
@@ -194,6 +204,7 @@ struct CreateTaskView: View {
                     }
                 }
             }
+
 
             if let image = image {
                 uploadImage(image: image) { url in
