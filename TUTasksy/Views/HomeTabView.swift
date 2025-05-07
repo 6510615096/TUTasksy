@@ -163,7 +163,7 @@ struct TaskCardView: View {
                 Button(action: {
                     // Handle report
                 }) {
-                    Image(systemName: "info.circle")
+                    Image(systemName: "flag")
                         .font(.title3)
                         .foregroundColor(.gray.opacity(0.5))
                 }

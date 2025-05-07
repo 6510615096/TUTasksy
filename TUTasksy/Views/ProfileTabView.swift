@@ -31,99 +31,113 @@ struct ProfileTabView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
-                    Spacer().frame(height: 30)
-
-                    PhotosPicker(selection: $selectedImage, matching: .images) {
-                        ZStack {
-                            if let image = profileImage {
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 130, height: 130)
-                                    .clipShape(Circle())
-                                    .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                                    .shadow(radius: 5)
-                            } else {
-                                Circle()
-                                    .fill(Color.gray.opacity(0.3))
-                                    .frame(width: 130, height: 130)
-                                    .overlay(
-                                        isLoading ? AnyView(ProgressView()) :
-                                        AnyView(Text(profileInitial)
-                                            .font(.system(size: 20, weight: .medium))
-                                            .fontDesign(.rounded)
-                                            .foregroundColor(.white))
-                                    )
-                                    .shadow(radius: 5)
+                VStack {
+                    VStack(spacing: 20) {
+                        Spacer().frame(height: 30)
+                        
+                        PhotosPicker(selection: $selectedImage, matching: .images) {
+                            ZStack {
+                                if let image = profileImage {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 130, height: 130)
+                                        .clipShape(Circle())
+                                        .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                                        .shadow(radius: 5)
+                                } else {
+                                    Circle()
+                                        .fill(Color.gray.opacity(0.3))
+                                        .frame(width: 130, height: 130)
+                                        .overlay(
+                                            isLoading ? AnyView(ProgressView()) :
+                                                AnyView(Text(profileInitial)
+                                                    .font(.system(size: 20, weight: .medium))
+                                                    .fontDesign(.rounded)
+                                                    .foregroundColor(.white))
+                                        )
+                                        .shadow(radius: 5)
+                                }
                             }
                         }
-                    }
-
-                    VStack(alignment: .leading, spacing: 15) {
-                        InfoField(label: "Full Name", text: name)
-                        InfoField(label: "Faculty", text: faculty)
-                        InfoField(label: "Student ID", text: studentID)
-
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text("Username")
-                                .font(.headline)
-                            TextField("Enter username", text: $username)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .focused($focusedField, equals: .username)
-                        }
-
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text("Bio")
-                                .font(.headline)
-                            TextEditor(text: $bio)
-                                .frame(height: 120)
-                                .padding(10)
-                                .background(Color.pink.opacity(0.1))
-                                .cornerRadius(12)
-                                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3)))
-                                .focused($focusedField, equals: .bio)
-                        }
-                    }
-                    .padding(.horizontal)
-
-                    Button(action: saveProfile) {
-                        HStack {
-                            if isSaving {
-                                ProgressView()
-                            } else {
-                                Image(systemName: "square.and.arrow.down")
-                                Text("Save Profile")
+                        
+                        VStack(alignment: .leading, spacing: 15) {
+                            InfoField(label: "Full Name", text: name)
+                            InfoField(label: "Faculty", text: faculty)
+                            InfoField(label: "Student ID", text: studentID)
+                            
+                            VStack(alignment: .leading, spacing: 5) {
+                                Text("Username")
+                                    .font(.headline)
+                                TextField("Enter username", text: $username)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .focused($focusedField, equals: .username)
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 5) {
+                                Text("Bio")
+                                    .font(.headline)
+                                TextEditor(text: $bio)
+                                    .frame(height: 120)
+                                    .padding(10)
+                                    .background(Color.pink.opacity(0.1))
+                                    .cornerRadius(12)
+                                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3)))
+                                    .focused($focusedField, equals: .bio)
                             }
                         }
-                        .foregroundColor(Color(hex: "#C77A17"))
-                        .padding()
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-                        .background(Color(hex: "#FFE7E4"))
-                        .cornerRadius(10)
-                        .shadow(radius: 3, x: 0, y: 3)
-                    }
-                    .padding(.horizontal)
-
-                    Spacer()
-                    
-                    Button(action: {
-                        do {
-                            try Auth.auth().signOut()
-                            isLoggedIn = false
-                        } catch let signOutError as NSError {
-                            print("Error signing out: %@", signOutError)
+                        .padding(.horizontal)
+                        
+                        Button(action: saveProfile) {
+                            HStack {
+                                if isSaving {
+                                    ProgressView()
+                                } else {
+                                    Image(systemName: "square.and.arrow.down")
+                                    Text("Save Profile")
+                                }
+                            }
+                            .foregroundColor(Color(hex: "#C77A17"))
+                            .padding()
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .background(Color(hex: "#FFE7E4"))
+                            .cornerRadius(10)
+                            .shadow(radius: 3, x: 0, y: 3)
                         }
-                    }) {
-                        Text("Logout")
-                            .foregroundColor(.red)
+                        .padding(.horizontal)
+                        
+                        //Spacer()
+                        
+                        Button(action: {
+                            do {
+                                try Auth.auth().signOut()
+                                isLoggedIn = false
+                            } catch let signOutError as NSError {
+                                print("Error signing out: %@", signOutError)
+                            }
+                        }) {
+                            Text("Logout")
+                                .foregroundColor(.red)
+                                .background(Color(hex: "#ffffff"))
+                                .font(.title2)
+                                //.frame(maxWidth: .infinity, height: 100)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .ignoresSafeArea()
+                                .padding()
+                        }
                     }
-
+                    .background(
+                        RoundedRectangle(cornerRadius: 30)
+                            .fill(Color(hex: "#FFFAED"))
+                            .shadow(radius: 1)
+                    )
+                    .padding()
+                    //.frame(width: 400, height: 1000)
                 }
             }
-            .background(Color(hex: "#FFFAED").ignoresSafeArea())
+            .background(Color(hex: "#ffffff").ignoresSafeArea()) //FFFAED
            // .navigationTitle("My Profile")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear(perform: fetchUserProfile)
