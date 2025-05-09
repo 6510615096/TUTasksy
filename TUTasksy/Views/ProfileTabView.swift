@@ -32,8 +32,28 @@ struct ProfileTabView: View {
         NavigationView {
             ScrollView {
                 VStack {
-                    VStack(spacing: 20) {
-                        Spacer().frame(height: 30)
+                    VStack {
+                        HStack (spacing: 20) {
+                            Spacer().frame(height: 50)
+                            // Chat button
+                            Button(action: {
+                                // Handle chat
+                            }) {
+                                Image(systemName: "ellipsis.bubble")
+                                    .font(.title2)
+                                    .foregroundColor(.gray.opacity(0.5))
+                            }
+                            // Report button
+                            Button(action: {
+                                // Handle report
+                            }) {
+                                Image(systemName: "flag")
+                                    .font(.title2)
+                                    .foregroundColor(.gray.opacity(0.5))
+                            }
+                            Spacer()
+                        }
+                        //Spacer().frame(height: 30)
                         
                         PhotosPicker(selection: $selectedImage, matching: .images) {
                             ZStack {
@@ -60,8 +80,9 @@ struct ProfileTabView: View {
                                 }
                             }
                         }
+                        Spacer().frame(height: 30)
                         
-                        VStack(alignment: .leading, spacing: 15) {
+                        VStack(alignment: .leading, spacing: 20) {
                             InfoField(label: "Full Name", text: name)
                             InfoField(label: "Faculty", text: faculty)
                             InfoField(label: "Student ID", text: studentID)
@@ -93,6 +114,7 @@ struct ProfileTabView: View {
                             }
                         }
                         .padding(.horizontal)
+                        Spacer().frame(height: 20)
                         
                         Button(action: saveProfile) {
                             HStack {
