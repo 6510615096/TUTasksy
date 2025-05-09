@@ -70,8 +70,13 @@ struct ProfileTabView: View {
                                 Text("Username")
                                     .font(.headline)
                                 TextField("Enter username", text: $username)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    //.textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .padding(10)
+                                    .background(Color(hex: "#FFEBE8"))
+                                    .cornerRadius(12)
+                                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3)))
                                     .focused($focusedField, equals: .username)
+                                    .scrollContentBackground(.hidden)
                             }
                             
                             VStack(alignment: .leading, spacing: 5) {
@@ -80,10 +85,11 @@ struct ProfileTabView: View {
                                 TextEditor(text: $bio)
                                     .frame(height: 120)
                                     .padding(10)
-                                    .background(Color.pink.opacity(0.1))
+                                    .background(Color(hex: "#FFEBE8"))
                                     .cornerRadius(12)
                                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3)))
                                     .focused($focusedField, equals: .bio)
+                                    .scrollContentBackground(.hidden)
                             }
                         }
                         .padding(.horizontal)
@@ -104,11 +110,9 @@ struct ProfileTabView: View {
                             .frame(maxWidth: .infinity)
                             .background(Color(hex: "#FFE7E4"))
                             .cornerRadius(10)
-                            .shadow(radius: 3, x: 0, y: 3)
+                            .shadow(radius: 2, x: 0, y: 3)
                         }
                         .padding(.horizontal)
-                        
-                        //Spacer()
                         
                         Button(action: {
                             do {
@@ -118,23 +122,28 @@ struct ProfileTabView: View {
                                 print("Error signing out: %@", signOutError)
                             }
                         }) {
-                            Text("Logout")
-                                .foregroundColor(.red)
-                                .background(Color(hex: "#ffffff"))
-                                .font(.title2)
-                                //.frame(maxWidth: .infinity, height: 100)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .ignoresSafeArea()
-                                .padding()
+                            HStack {
+                                Image(systemName: "arrow.backward.circle")
+                                Text("Logout")
+                            }
+                            .foregroundColor(.red)
+                            .padding()
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .background(Color(hex: "#E7E7E7"))
+                            .cornerRadius(10)
+                            .shadow(radius: 2, x: 0, y: 3)
                         }
+                        .padding()
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 30)
                             .fill(Color(hex: "#FFFAED"))
-                            .shadow(radius: 1)
+                            .cornerRadius(20)
+                            .shadow(color: .gray.opacity(0.2), radius: 5, x: 0, y: 2)
                     )
                     .padding()
-                    //.frame(width: 400, height: 1000)
                 }
             }
             .background(Color(hex: "#ffffff").ignoresSafeArea()) //FFFAED
