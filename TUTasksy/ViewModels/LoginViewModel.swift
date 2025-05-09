@@ -107,7 +107,7 @@ class LoginViewModel: ObservableObject {
             "type": userInfo.type,
             "department": userInfo.department,
             "faculty": userInfo.faculty,
-            "nickname": "not set",
+            //"nickname": "not set",
             "createdAt": FieldValue.serverTimestamp()
         ]) { error in
             DispatchQueue.main.async {

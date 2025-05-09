@@ -50,7 +50,7 @@ struct CreateTaskView: View {
                             .frame(width: 40, height: 40)
                             .overlay(Text("-").font(.headline).foregroundColor(.white))
                         VStack(alignment: .leading) {
-                            Text(userNickname.isEmpty ? "Loading..." : userNickname)
+                            Text(userNickname.isEmpty ? "[username - not set]" : userNickname)
                                 .font(.headline)
                                 .foregroundColor(.brown)
                             Text(today)
@@ -243,7 +243,7 @@ struct CreateTaskView: View {
         }
         
         let db = Firestore.firestore()
-        db.collection("users").document(user.uid).getDocument { document, error in
+        db.collection("profiles").document(user.uid).getDocument { document, error in
             if let error = error {
                 print("Error fetching user document: \(error)")
                 return
