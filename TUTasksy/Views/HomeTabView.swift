@@ -8,13 +8,15 @@ struct HomeTabView: View {
         ZStack {
             Color(.white)
             
-            ScrollView {
-                VStack(spacing: 16) {
-                    ForEach(viewModel.tasks) { task in
-                        TaskCardView(task: task)
+            NavigationView {
+                ScrollView {
+                    VStack(spacing: 16) {
+                        ForEach(viewModel.tasks) { task in
+                            TaskCardView(task: task)
+                        }
                     }
+                    .padding()
                 }
-                .padding()
             }
             
             VStack {
@@ -49,6 +51,7 @@ struct HomeTabView: View {
 struct TaskCardView: View {
     let task: TaskCard
     @State private var isPressed = false
+    @State private var showCommentPanel = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -150,12 +153,20 @@ struct TaskCardView: View {
                 .padding(.horizontal, 8)
                 
                 // Comment button
+                
                 Button(action: {
+                    
+                        showCommentPanel = true
+                    
                     // Handle comment
                 }) {
                     Image(systemName: "bubble.right")
                         .font(.title3)
                         .foregroundColor(.gray.opacity(0.5))
+                }
+                .sheet(isPresented: $showCommentPanel) {
+                    CommentView(task: task)
+                        .presentationDetents([.fraction(0.7)])
                 }
                 .padding(.horizontal, 8)
                 
