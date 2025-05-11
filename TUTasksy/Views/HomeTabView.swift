@@ -1,4 +1,6 @@
 import SwiftUI
+import FirebaseStorage
+import FirebaseFirestore
 
 struct HomeTabView: View {
     @StateObject private var viewModel = TaskViewModel()
@@ -52,19 +54,34 @@ struct TaskCardView: View {
     let task: TaskCard
     @State private var isPressed = false
     @State private var showCommentPanel = false
-    
+    @State private var taskImage: UIImage? = nil
+    @State private var profileImage: UIImage? = nil
+    @State private var isLoadingTaskImage = false
+    @State private var isLoadingProfileImage = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .center) {
-                Circle()
-                    .fill(Color.gray.opacity(0.5))
-                    .frame(width: 50, height: 50)
-                    .overlay(
-                        Text(String(task.username.prefix(1)))
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                    )
+                ZStack {
+                    if let profileImage = profileImage {
+                        Image(uiImage: profileImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 40, height: 40)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                    } else if isLoadingProfileImage {
+                        Circle()
+                            .fill(Color.gray.opacity(0.5))
+                            .frame(width: 40, height: 40)
+                            .overlay(ProgressView())
+                    } else {
+                        Circle()
+                            .fill(Color.gray.opacity(0.5))
+                            .frame(width: 40, height: 40)
+                            .overlay(Text(task.username.prefix(1)).font(.headline).foregroundColor(.white))
+                    }
+                }
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(task.username)
@@ -102,25 +119,25 @@ struct TaskCardView: View {
                 .foregroundColor(.orange)
                 .padding(.top, 4)
             
-            if let imageUrl = task.imageUrl, let url = URL(string: imageUrl) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-                            .frame(height: 200)
-                    case .success(let image):
-                        image
+            if let imageUrl = task.imageUrl {
+                ZStack {
+                    if let taskImage = taskImage {
+                        Image(uiImage: taskImage)
                             .resizable()
                             .scaledToFill()
                             .frame(height: 200)
                             .clipped()
                             .cornerRadius(12)
-                    case .failure:
+                    } else if isLoadingTaskImage {
+                        ProgressView()
+                            .frame(height: 200)
+                    } else {
                         Image(systemName: "photo")
                             .frame(height: 200)
-                    @unknown default:
-                        EmptyView()
                     }
+                }
+                .onAppear {
+                    loadTaskImage(from: imageUrl)
                 }
                 .padding(.vertical, 4)
             }
@@ -153,12 +170,8 @@ struct TaskCardView: View {
                 .padding(.horizontal, 8)
                 
                 // Comment button
-                
                 Button(action: {
-                    
-                        showCommentPanel = true
-                    
-                    // Handle comment
+                    showCommentPanel = true
                 }) {
                     Image(systemName: "bubble.right")
                         .font(.title3)
@@ -185,6 +198,66 @@ struct TaskCardView: View {
         .background(Color(hex: "#FFFAED"))
         .cornerRadius(20)
         .shadow(color: .gray.opacity(0.2), radius: 5, x: 0, y: 2)
+        .onAppear {
+            loadProfileImage(for: task.userId)
+        }
+    }
+    
+    private func loadTaskImage(from urlString: String) {
+        guard !urlString.isEmpty else { return }
+        
+        isLoadingTaskImage = true
+        let storageRef = Storage.storage().reference(forURL: urlString)
+        
+        storageRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
+            isLoadingTaskImage = false
+            if let error = error {
+                print("Error loading task image: \(error.localizedDescription)")
+                return
+            }
+            
+            if let data = data, let image = UIImage(data: data) {
+                self.taskImage = image
+            }
+        }
+    }
+    
+    private func loadProfileImage(for userId: String) {
+        guard !userId.isEmpty else { return }
+        
+        isLoadingProfileImage = true
+        let db = Firestore.firestore()
+        
+        // Fetch the profile document for the given userId
+        db.collection("profiles").document(userId).getDocument { document, error in
+            if let error = error {
+                print("Error fetching profile document: \(error.localizedDescription)")
+                isLoadingProfileImage = false
+                return
+            }
+            
+            guard let document = document, document.exists,
+                  let data = document.data(),
+                  let profileImageUrl = data["profileImageUrl"] as? String else {
+                print("No profile image URL found for userId: \(userId)")
+                isLoadingProfileImage = false
+                return
+            }
+            
+            // Load the profile image from Firebase Storage
+            let storageRef = Storage.storage().reference(forURL: profileImageUrl)
+            storageRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
+                isLoadingProfileImage = false
+                if let error = error {
+                    print("Error loading profile image: \(error.localizedDescription)")
+                    return
+                }
+                
+                if let data = data, let image = UIImage(data: data) {
+                    self.profileImage = image
+                }
+            }
+        }
     }
     
     private func formatDate(_ date: Date) -> String {
@@ -194,6 +267,7 @@ struct TaskCardView: View {
     }
 }
 
+/*
 #Preview {
     HomeTabView()
-}
+}*/

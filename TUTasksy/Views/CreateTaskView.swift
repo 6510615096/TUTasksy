@@ -12,11 +12,12 @@ struct CreateTaskView: View {
     @State private var isUploading = false
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var userNickname = ""
+    @State private var profileImage: UIImage? = nil
+    @State private var isLoadingImage = false
     @Environment(\.dismiss) var dismiss
     @State private var showAlert = false
     @State private var alertMessage = ""
 
-    
     private var today: String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -26,29 +27,41 @@ struct CreateTaskView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Button(action: { dismiss()
-                    }) {
+                Button(action: { dismiss() }) {
                     Image(systemName: "chevron.left")
                         .font(.title2)
                         .foregroundColor(.gray)
                 }
                 VStack(spacing: 0) {
                     HeaderView(title: "CREATE TASK")
-                    //Spacer()
                 }
-                //Spacer()
             }
             .padding(EdgeInsets(top: 20, leading: 20, bottom: 0, trailing: 35))
             .background(Color.blue.opacity(0.2))
 
-            
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     HStack(alignment: .center) {
-                        Circle()
-                            .fill(Color.gray.opacity(0.5))
-                            .frame(width: 40, height: 40)
-                            .overlay(Text("-").font(.headline).foregroundColor(.white))
+                        ZStack {
+                            if let profileImage = profileImage {
+                                Image(uiImage: profileImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 40, height: 40)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                            } else if isLoadingImage {
+                                Circle()
+                                    .fill(Color.gray.opacity(0.5))
+                                    .frame(width: 40, height: 40)
+                                    .overlay(ProgressView())
+                            } else {
+                                Circle()
+                                    .fill(Color.gray.opacity(0.5))
+                                    .frame(width: 40, height: 40)
+                                    .overlay(Text(userNickname.prefix(1)).font(.headline).foregroundColor(.white))
+                            }
+                        }
                         VStack(alignment: .leading) {
                             Text(userNickname.isEmpty ? "[username - not set]" : userNickname)
                                 .font(.headline)
@@ -131,7 +144,6 @@ struct CreateTaskView: View {
                             .frame(maxWidth: .infinity)
                             .background(Color.green.opacity(0.2))
                             .cornerRadius(16)
-                            //.shadow(radius: 2)
                     }
                     .disabled(isUploading)
 
@@ -147,13 +159,12 @@ struct CreateTaskView: View {
         }
         .onAppear {
             fetchUserNickname()
+            fetchProfileImage()
         }
         .alert(isPresented: $showAlert) {
             Alert(title: Text("Task Status"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
         }
-
     }
-    
 
     func uploadTask() {
         guard !title.isEmpty, !description.isEmpty, !reward.isEmpty else { return }
@@ -259,6 +270,44 @@ struct CreateTaskView: View {
                 self.userNickname = nickname
             }
         }
+
+    func fetchProfileImage() {
+        guard let user = Auth.auth().currentUser else {
+            print("No user logged in")
+            return
+        }
+
+        isLoadingImage = true
+        let db = Firestore.firestore()
+        db.collection("profiles").document(user.uid).getDocument { document, error in
+            if let error = error {
+                print("Error fetching profile image URL: \(error)")
+                isLoadingImage = false
+                return
+            }
+
+            guard let document = document, document.exists,
+                  let data = document.data(),
+                  let profileImageUrl = data["profileImageUrl"] as? String else {
+                print("No profile image URL found")
+                isLoadingImage = false
+                return
+            }
+
+            let storageRef = Storage.storage().reference(forURL: profileImageUrl)
+            storageRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
+                isLoadingImage = false
+                if let error = error {
+                    print("Error downloading profile image: \(error)")
+                    return
+                }
+
+                if let data = data, let image = UIImage(data: data) {
+                    self.profileImage = image
+                }
+            }
+        }
+    }
 }
 
 #Preview {

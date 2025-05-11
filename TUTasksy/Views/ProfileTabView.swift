@@ -500,6 +500,7 @@ struct InfoField: View {
     }
 }
 
+/*
 #Preview {
     ProfileTabView()
-}
+}*/
