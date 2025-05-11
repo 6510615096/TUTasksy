@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		888581222DD08B3200C43AD4 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 888581212DD08B2A00C43AD4 /* .gitignore */; };
 		95F7E8B92DCB4B8200781FBD /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 95F7E8B82DCB4B8200781FBD /* FirebaseAuth */; };
 		95F7E8BB2DCB4B8200781FBD /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 95F7E8BA2DCB4B8200781FBD /* FirebaseFirestore */; };
 		95F7E8BD2DCB4B8200781FBD /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 95F7E8BC2DCB4B8200781FBD /* FirebaseStorage */; };
@@ -14,6 +15,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		888581212DD08B2A00C43AD4 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		954FAC142DC1FE9900C525F7 /* TUTasksy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TUTasksy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		95F7E8DC2DCB4C8100781FBD /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -46,6 +48,7 @@
 				954FAC162DC1FE9900C525F7 /* TUTasksy */,
 				954FAC152DC1FE9900C525F7 /* Products */,
 				95F7E8DC2DCB4C8100781FBD /* GoogleService-Info.plist */,
+				888581212DD08B2A00C43AD4 /* .gitignore */,
 			);
 			sourceTree = "<group>";
 		};
@@ -127,6 +130,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				888581222DD08B3200C43AD4 /* .gitignore in Resources */,
 				95F7E8DD2DCB4C8100781FBD /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
