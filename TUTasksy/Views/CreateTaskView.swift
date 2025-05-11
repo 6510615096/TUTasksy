@@ -166,7 +166,7 @@ struct CreateTaskView: View {
 
         let db = Firestore.firestore()
 
-        db.collection("users").document(user.uid).getDocument { document, error in
+        db.collection("profiles").document(user.uid).getDocument { document, error in
             guard let document = document, document.exists,
                   let data = document.data(),
                   let nickname = data["nickname"] as? String else {
@@ -237,28 +237,28 @@ struct CreateTaskView: View {
     }
     
     func fetchUserNickname() {
-        guard let user = Auth.auth().currentUser else {
-            print("No user logged in")
-            return
-        }
-        
-        let db = Firestore.firestore()
-        db.collection("profiles").document(user.uid).getDocument { document, error in
-            if let error = error {
-                print("Error fetching user document: \(error)")
+            guard let user = Auth.auth().currentUser else {
+                print("No user logged in")
                 return
             }
             
-            guard let document = document, document.exists,
-                  let data = document.data(),
-                  let nickname = data["nickname"] as? String else {
-                print("Failed to get nickname")
-                return
+            let db = Firestore.firestore()
+            db.collection("profiles").document(user.uid).getDocument { document, error in
+                if let error = error {
+                    print("Error fetching user document: \(error)")
+                    return
+                }
+                
+                guard let document = document, document.exists,
+                      let data = document.data(),
+                      let nickname = data["nickname"] as? String else {
+                    print("Failed to get nickname")
+                    return
+                }
+                
+                self.userNickname = nickname
             }
-            
-            self.userNickname = nickname
         }
-    }
 }
 
 #Preview {

@@ -84,7 +84,7 @@ struct ProfileTabView: View {
                                         .frame(width: 130, height: 130)
                                         .overlay(
                                             isLoading ?
-                                                AnyView(ProgressView().foregroundColor(.white)) :
+                                            AnyView(ProgressView().foregroundColor(.white)) :
                                                 AnyView(Text(profileInitial)
                                                     .font(.system(size: 50, weight: .semibold))
                                                     .fontDesign(.rounded)
@@ -232,7 +232,7 @@ struct ProfileTabView: View {
             }
         }
     }
-
+    
     private func fetchUserProfile() {
         guard let currentUser = Auth.auth().currentUser else {
             isLoading = false
@@ -240,19 +240,19 @@ struct ProfileTabView: View {
             showError = true
             return
         }
-
+        
         isLoading = true
         profileImage = nil
         profileImageUrl = nil
-
+        
         let group = DispatchGroup()
-
+        
         // Fetch from users collection
         group.enter()
         let userRef = db.collection("users").document(currentUser.uid)
         userRef.getDocument { document, error in
             defer { group.leave() }
-
+            
             if let error = error {
                 print("Error fetching user profile: \(error.localizedDescription)")
                 DispatchQueue.main.async {
@@ -261,7 +261,7 @@ struct ProfileTabView: View {
                 }
                 return
             }
-
+            
             guard let document = document, document.exists, let userData = document.data() else {
                 print("User document doesn't exist")
                 DispatchQueue.main.async {
@@ -270,12 +270,12 @@ struct ProfileTabView: View {
                 }
                 return
             }
-
+            
             DispatchQueue.main.async {
                 self.name = userData["displayname_en"] as? String ?? "Name not set"
                 self.faculty = userData["faculty"] as? String ?? "Faculty not set"
                 self.studentID = userData["username"] as? String ?? "ID not set"
-
+                
                 if let name = userData["displayname_en"] as? String, !name.isEmpty {
                     self.profileInitial = String(name.prefix(1)).uppercased()
                 } else if let username = userData["username"] as? String, !username.isEmpty {
@@ -285,13 +285,13 @@ struct ProfileTabView: View {
                 }
             }
         }
-
+        
         // Fetch from profiles collection
         group.enter()
         let profileRef = db.collection("profiles").document(currentUser.uid)
         profileRef.getDocument { document, error in
             defer { group.leave() }
-
+            
             if let error = error {
                 print("Error fetching extended profile: \(error.localizedDescription)")
                 DispatchQueue.main.async {
@@ -300,14 +300,14 @@ struct ProfileTabView: View {
                 }
                 return
             }
-
+            
             if let document = document, document.exists, let profileData = document.data() {
                 DispatchQueue.main.async {
                     self.username = profileData["nickname"] as? String ?? "Username not set"
                     self.bio = profileData["bio"] as? String ?? ""
                     self.profileImageUrl = profileData["profileImageUrl"] as? String
                 }
-
+                
                 // Load profile image if URL exists
                 if let urlString = profileData["profileImageUrl"] as? String, !urlString.isEmpty {
                     print("Profile Image URL: \(urlString)")
@@ -321,47 +321,47 @@ struct ProfileTabView: View {
                 }
             }
         }
-
+        
         group.notify(queue: .main) {
             isLoading = false
         }
     }
-
+    
     
     private func loadProfileImage(from urlString: String) {
         guard let currentUser = Auth.auth().currentUser else {
             print("No user signed in")
             return
         }
-
+        
         DispatchQueue.main.async {
             self.isLoadingImage = true
         }
-
+        
         let storage = Storage.storage()
         let storageRef = storage.reference(forURL: urlString)
-
+        
         storageRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
             DispatchQueue.main.async {
                 self.isLoadingImage = false
             }
-
+            
             if let error = error {
                 print("Firebase Storage image download failed: \(error.localizedDescription)")
                 return
             }
-
+            
             guard let data = data, let image = UIImage(data: data) else {
                 print("Could not decode image from Firebase data")
                 return
             }
-
+            
             DispatchQueue.main.async {
                 self.profileImage = image
             }
         }
     }
-
+    
     private func saveProfile() {
         guard let currentUser = Auth.auth().currentUser else {
             errorMessage = "No user is signed in"
@@ -371,7 +371,7 @@ struct ProfileTabView: View {
         
         isSaving = true
         focusedField = nil
-
+        
         let profileRef = db.collection("profiles").document(currentUser.uid)
         profileRef.setData([
             "profileImageUrl": profileImageUrl ?? "",
@@ -394,7 +394,41 @@ struct ProfileTabView: View {
                 }
             }
         }
+        
+        let db = Firestore.firestore()
+        db.collection("tasks")
+            .whereField("userId", isEqualTo: currentUser.uid)
+            .getDocuments { snapshot, error in
+                
+                if let error = error {
+                    print("Error fetching tasks: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let documents = snapshot?.documents else {
+                    print("No tasks found")
+                    return
+                }
+
+                for eachTask in documents {
+                    eachTask.reference.setData([
+                        "lastUpdated": FieldValue.serverTimestamp(),
+                        "username": username
+                    ], merge: true) { error in
+                        DispatchQueue.main.async {
+                            if let error = error {
+                                print("Error updating task: \(error.localizedDescription)")
+                            } else {
+                                print("Successfully updated task: \(eachTask.documentID)")
+                            }
+                        }
+                    }
+                }
+            }
+
+            
     }
+
 
     private func uploadProfileImage(data: Data) async {
         guard let currentUser = Auth.auth().currentUser else {
