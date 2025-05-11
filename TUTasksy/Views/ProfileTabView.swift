@@ -329,54 +329,38 @@ struct ProfileTabView: View {
 
     
     private func loadProfileImage(from urlString: String) {
-        guard let url = URL(string: urlString) else {
-            print("Invalid profile image URL: \(urlString)")
+        guard let currentUser = Auth.auth().currentUser else {
+            print("No user signed in")
             return
         }
-        
+
         DispatchQueue.main.async {
             self.isLoadingImage = true
         }
-        
-        
-        
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            defer {
-                DispatchQueue.main.async {
-                    self.isLoadingImage = false
-                }
+
+        let storage = Storage.storage()
+        let storageRef = storage.reference(forURL: urlString)
+
+        // Adjust maxSize if your images are large
+        storageRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
+            DispatchQueue.main.async {
+                self.isLoadingImage = false
             }
-            
+
             if let error = error {
-                print("Error downloading profile image: \(error.localizedDescription)")
+                print("Firebase Storage image download failed: \(error.localizedDescription)")
                 return
             }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                print("No HTTP response received")
+
+            guard let data = data, let image = UIImage(data: data) else {
+                print("Could not decode image from Firebase data")
                 return
             }
-            
-            guard (200...299).contains(httpResponse.statusCode) else {
-                print("HTTP response error: \(httpResponse.statusCode)")
-                return
+
+            DispatchQueue.main.async {
+                self.profileImage = image
             }
-            
-            guard let data = data, !data.isEmpty else {
-                print("No image data received")
-                return
-            }
-            
-            print("Downloaded image data size: \(data.count) bytes")
-            
-            if let image = UIImage(data: data) {
-                DispatchQueue.main.async {
-                    self.profileImage = image
-                }
-            } else {
-                print("Could not decode image from data")
-            }
-        }.resume()
+        }
     }
 
     private func saveProfile() {
