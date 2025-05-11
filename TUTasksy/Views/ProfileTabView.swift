@@ -341,7 +341,6 @@ struct ProfileTabView: View {
         let storage = Storage.storage()
         let storageRef = storage.reference(forURL: urlString)
 
-        // Adjust maxSize if your images are large
         storageRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
             DispatchQueue.main.async {
                 self.isLoadingImage = false
