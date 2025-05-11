@@ -8,29 +8,34 @@
 import Foundation
 import FirebaseFirestore
 import FirebaseAuth
+import FirebaseFirestoreCombineSwift
 
 class ChatViewModel: ObservableObject {
     @Published var messages: [Message] = []
     private var db = Firestore.firestore()
     private var listener: ListenerRegistration?
 
-    init() {
-        fetchMessages()
-    }
-
-    func fetchMessages() {
-        listener = db.collection("messages")
+    func loadMessages(for conversationId: String) {
+        listener?.remove()
+        
+        listener = db.collection("conversations")
+            .document(conversationId)
+            .collection("messages")
             .order(by: "timestamp", descending: false)
             .addSnapshotListener { snapshot, error in
-                guard let documents = snapshot?.documents else { return }
+                guard let documents = snapshot?.documents else {
+                    print("Error fetching messages: \(error?.localizedDescription ?? "Unknown error")")
+                    return
+                }
                 self.messages = documents.compactMap { doc in
                     try? doc.data(as: Message.self)
                 }
             }
     }
 
-    func sendMessage(text: String) {
+    func sendMessage(to conversationId: String, text: String) {
         guard let user = Auth.auth().currentUser else { return }
+
         let newMessage = Message(
             senderId: user.uid,
             senderName: user.displayName ?? "Unknown",
@@ -39,9 +44,12 @@ class ChatViewModel: ObservableObject {
         )
 
         do {
-            _ = try db.collection("messages").addDocument(from: newMessage)
+            _ = try db.collection("conversations")
+                .document(conversationId)
+                .collection("messages")
+                .addDocument(from: newMessage)
         } catch {
-            print("Error sending message: \(error)")
+            print("Error sending message: \(error.localizedDescription)")
         }
     }
 

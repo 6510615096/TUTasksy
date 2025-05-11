@@ -10,50 +10,48 @@ import FirebaseAuth
 
 struct ChatsTabView: View {
     @StateObject private var viewModel = ChatViewModel()
-    @State private var messageText = ""
-
+    @State private var conversations: [Conversation] = []
+    
     var body: some View {
-        VStack {
-            ScrollViewReader { proxy in
-                ScrollView {
-                    ForEach(viewModel.messages) { msg in
-                        HStack {
-                            if msg.senderId == Auth.auth().currentUser?.uid {
-                                Spacer()
-                                Text(msg.text)
-                                    .padding()
-                                    .background(Color.green.opacity(0.3))
-                                    .cornerRadius(10)
-                            } else {
-                                Text(msg.text)
-                                    .padding()
-                                    .background(Color.gray.opacity(0.2))
-                                    .cornerRadius(10)
-                                Spacer()
+        NavigationView {
+            VStack {
+                if conversations.isEmpty {
+                    Text("No conversations yet")
+                        .font(.system(size: 21, weight: .medium))
+                        .foregroundColor(.white)
+                        .padding()
+                } else {
+                    List(conversations) { conversation in
+                        NavigationLink(destination: ChatsRoomView(conversationId: conversation.id ?? ""),
+                            label: {
+                            Text("Chat ID: \(conversation.id ?? "Unknown")")
+                                .padding()
                             }
-                        }
-                        .padding(.horizontal)
-                        .id(msg.id)
-                    }
-                }
-                .onChange(of: viewModel.messages.count) { oldValue, newValue in
-                    if let lastId = viewModel.messages.last?.id {
-                        withAnimation {
-                            proxy.scrollTo(lastId, anchor: .bottom)
-                        }
+                        )
                     }
                 }
             }
-
-            HStack {
-                TextField("Message...", text: $messageText)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                Button("Send") {
-                    viewModel.sendMessage(text: messageText)
-                    messageText = ""
-                }
+            .onAppear {
+                //validateAuth()
+                fetchConversations()
             }
-            .padding()
         }
     }
+    
+    private func validateAuth() {
+        if FirebaseAuth.Auth.auth().currentUser == nil {
+            print("Not logged in")
+        }
+    }
+    
+    private func fetchConversations() {
+        self.conversations = [
+            Conversation(id: "1", participantIds: ["user1", "user2"], lastMessage: "Hello", updatedAt: Date()),
+            Conversation(id: "2", participantIds: ["user1", "user3"], lastMessage: "Hi", updatedAt: Date())
+        ]
+    }
+}
+
+#Preview {
+    ChatsTabView()
 }
