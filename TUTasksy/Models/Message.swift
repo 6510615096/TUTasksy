@@ -1,17 +1,16 @@
-//
-//  Message.swift
-//  TUTasksy
-//
-//  Created by นางสาวณัฐภูพิชา อรุณกรพสุรักษ์ on 9/5/2568 BE.
-//
-
 import Foundation
-import FirebaseFirestore
 
-struct Message: Identifiable, Codable {
-    @DocumentID var id: String?
+struct Message: Identifiable, Equatable {
+    let id: String
     let senderId: String
-    let senderName: String
     let text: String
     let timestamp: Date
 }
+
+extension Message: Comparable {
+    static func < (lhs: Message, rhs: Message) -> Bool {
+        return lhs.timestamp < rhs.timestamp
+    }
+}
+
+
