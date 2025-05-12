@@ -77,10 +77,18 @@ struct TaskCardView: View {
                     .foregroundColor(task.status == "Available" ? .green : .red)
                     .clipShape(Capsule())
             }
-
+            
+            Text(task.title)
+                .font(.body)
+                .fontWeight(.bold)
+                .foregroundColor(Color(hex: "#C77A17"))
+                .lineLimit(nil)
+                .padding(.top, 4)
+            
             Text(task.description)
                 .font(.body)
                 .lineLimit(nil)
+                .foregroundColor(Color(hex: "#C77A17"))
                 .padding(.top, 4)
 
             Text("Reward: \(task.reward) baht")

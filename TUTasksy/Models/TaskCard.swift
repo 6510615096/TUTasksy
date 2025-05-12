@@ -4,6 +4,7 @@ struct TaskCard: Identifiable {
     var id: String
     var userId: String
     var username: String
+    var title: String
     var description: String
     var date: Date
     var reward: String

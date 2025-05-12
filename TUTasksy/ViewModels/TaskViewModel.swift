@@ -18,6 +18,7 @@ class TaskViewModel: ObservableObject {
                 let data = doc.data()
                 let id = doc.documentID
                 let userId = data["userId"] as? String ?? ""
+                let title = data["title"] as? String ?? ""
                 let username = data["username"] as? String ?? ""
                 let description = data["description"] as? String ?? ""
                 let timestamp = data["date"] as? Timestamp
@@ -35,6 +36,7 @@ class TaskViewModel: ObservableObject {
                     id: id,
                     userId: userId,
                     username: username,
+                    title: title,
                     description: description,
                     date: date,
                     reward: reward,
