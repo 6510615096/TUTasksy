@@ -1,46 +1,52 @@
-import SwiftUI
-import Firebase
-
-struct TaskCard: Identifiable {
-    let id: String
-    let title: String
-    let description: String
-    let reward: String
-    let date: Date
-    let username: String
-    let imageUrl: String?
-    let status: String
-    let nickname: String
-    let userId: String
-}
+import Foundation
+import FirebaseFirestore
+import FirebaseAuth
 
 class TaskViewModel: ObservableObject {
     @Published var tasks: [TaskCard] = []
 
-    init() {
-        fetchTasks()
-    }
-
     func fetchTasks() {
-        Firestore.firestore().collection("tasks")
-            .order(by: "date", descending: true)
-            .addSnapshotListener { snapshot, error in
-                guard let documents = snapshot?.documents else { return }
-                self.tasks = documents.compactMap { doc in
-                    let data = doc.data()
-                    return TaskCard(
-                        id: doc.documentID,
-                        title: data["title"] as? String ?? "",
-                        description: data["description"] as? String ?? "",
-                        reward: data["reward"] as? String ?? "",
-                        date: (data["date"] as? Timestamp)?.dateValue() ?? Date(),
-                        username: data["username"] as? String ?? "",
-                        imageUrl: data["imageUrl"] as? String,
-                        status: data["status"] as? String ?? "Available",
-                        nickname: "not set yet",
-                        userId: data["userId"] as? String ?? ""
-                    )
-                }
+        let db = Firestore.firestore()
+
+        db.collection("tasks").addSnapshotListener { snapshot, error in
+            guard let documents = snapshot?.documents else {
+                print("No documents")
+                return
             }
+
+            self.tasks = documents.compactMap { doc in
+                let data = doc.data()
+                let id = doc.documentID
+                let userId = data["userId"] as? String ?? ""
+                let username = data["username"] as? String ?? ""
+                let description = data["description"] as? String ?? ""
+                let timestamp = data["date"] as? Timestamp
+                let date = timestamp?.dateValue() ?? Date()
+                let reward = data["reward"] as? String ?? ""
+                let imageUrl = data["imageUrl"] as? String
+                let status = data["status"] as? String ?? "Available"
+                let likeUserIds = data["likeUserIds"] as? [String] ?? []
+                let interestedUserIds = data["interestedUserIds"] as? [String] ?? []
+                let acceptedUserId = data["acceptedUserId"] as? String
+                let acceptedUserIds = data["acceptedUserIds"] as? [String] ?? []
+                let maxAccepted = data["maxAccepted"] as? Int ?? 1
+
+                return TaskCard(
+                    id: id,
+                    userId: userId,
+                    username: username,
+                    description: description,
+                    date: date,
+                    reward: reward,
+                    imageUrl: imageUrl,
+                    status: status,
+                    likeUserIds: likeUserIds,
+                    interestedUserIds: interestedUserIds,
+                    acceptedUserIds: acceptedUserIds,
+                    maxAccepted: maxAccepted
+                )
+            }
+        }
     }
 }
+

@@ -17,6 +17,7 @@ struct CreateTaskView: View {
     @Environment(\.dismiss) var dismiss
     @State private var showAlert = false
     @State private var alertMessage = ""
+    @State private var maxAccepted: Int?
 
     private var today: String {
         let formatter = DateFormatter()
@@ -26,6 +27,7 @@ struct CreateTaskView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // header ของหน้า
             HStack {
                 Button(action: { dismiss() }) {
                     Image(systemName: "chevron.left")
@@ -38,7 +40,8 @@ struct CreateTaskView: View {
             }
             .padding(EdgeInsets(top: 20, leading: 20, bottom: 0, trailing: 35))
             .background(Color.blue.opacity(0.2))
-
+            
+            // เนื้อหาของหน้า
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     HStack(alignment: .center) {
@@ -97,6 +100,14 @@ struct CreateTaskView: View {
                         Text("Reward")
                             .fontWeight(.semibold)
                         TextField("Enter reward amount", text: $reward)
+                            .padding()
+                            .background(Color.red.opacity(0.1))
+                            .cornerRadius(12)
+                            .keyboardType(.numberPad)
+
+                        Text("Acceptance limit")
+                            .fontWeight(.semibold)
+                        TextField("Number of people", value: $maxAccepted, formatter: NumberFormatter())
                             .padding()
                             .background(Color.red.opacity(0.1))
                             .cornerRadius(12)
