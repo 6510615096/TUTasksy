@@ -67,3 +67,7 @@ fastlane/test_output
 
 .DS_Store
 
+# Ignore user-specific Xcode settings
+*.xcuserdatad/
+
+

@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAuth
 import UIKit
 
 extension UIColor {
@@ -74,7 +75,8 @@ struct HomeView: View {
                 //Spacer()
             }
             //.ignoresSafeArea(edges: .top)
-
+        
+            // tab ข้างล่าง link ไปแต่ละหน้า
             TabView(selection: $selectedTab) {
                 HomeTabView()
                     .tabItem {
@@ -88,11 +90,20 @@ struct HomeView: View {
                     }
                     .tag(Tab.tasks)
 
-                ChatsTabView()
-                    .tabItem {
-                        Label("Chats", systemImage: "ellipses.bubble")
-                    }
-                    .tag(Tab.chats)
+                if let user = Auth.auth().currentUser {
+                    ChatsTabView(currentUserId: user.uid)
+                        .tabItem {
+                            Label("Chats", systemImage: "ellipses.bubble")
+                        }
+                        .tag(Tab.chats)
+                } else {
+                    // Show login view or placeholder
+                    Text("Please log in to view chats.")
+                        .tabItem {
+                            Label("Chats", systemImage: "ellipses.bubble")
+                        }
+                        .tag(Tab.chats)
+                }
 
                 ProfileTabView()
                     .tabItem {
