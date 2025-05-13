@@ -12,7 +12,8 @@ struct UserProfileView: View {
     @State private var isLoading = true
     @State private var navigateToChats = false
     @State private var showReportAlert = false
-
+    @State private var showReportSheet = false
+    @State private var reportReason: String = "Inappropriate behavior"
 
     @State private var selectedChatId: String? = nil
     @AppStorage("currentUserId") var currentUserId: String = ""
@@ -91,7 +92,7 @@ struct UserProfileView: View {
                     .hidden()
                     
                     Button(action: {
-                        self.showReportAlert = true
+                        self.showReportSheet = true
                     }) {
                         Text("Report User")
                             .font(.headline).fontWeight(.bold)
@@ -102,16 +103,38 @@ struct UserProfileView: View {
                             .background(Color(hex: "#E7E7E7"))
                             .cornerRadius(12)
                     }
-                    
-                    .alert(isPresented: $showReportAlert) {
-                        Alert(
-                            title: Text("Report User"),
-                            message: Text("Are you sure you want to report this user?"),
-                            primaryButton: .destructive(Text("Report")) {
-                                reportUser()
-                            },
-                            secondaryButton: .cancel()
-                        )
+                    .sheet(isPresented: $showReportSheet) {
+                        VStack(spacing: 24) {
+                            Text("Report User")
+                                .font(.title2).bold()
+                                .fontDesign(.rounded)
+                            Text("Please specify the reason for reporting this user:")
+                                .fontDesign(.rounded)
+                            TextEditor(text: $reportReason)
+                                .frame(minHeight: 80, maxHeight: 150)
+                                .padding(8)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(8)
+                                .font(.body)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                )
+                                .padding(.horizontal)
+                            HStack {
+                                Button("Cancel") {
+                                    showReportSheet = false
+                                }
+                                Spacer()
+                                Button("Report") {
+                                    reportUser()
+                                    showReportSheet = false
+                                }
+                                .foregroundColor(.red)
+                            }
+                            .padding(.horizontal)
+                        }
+                        .padding()
                     }
                 }
 
@@ -199,8 +222,7 @@ struct UserProfileView: View {
     
     private func reportUser() {
         let reportManager = ReportManager()
-
-        let reason = "Inappropriate behavior"
+        let reason = reportReason.isEmpty ? "No reason specified" : reportReason
         reportManager.reportUser(reportedUserId: userId, reason: reason) { error in
             if let error = error {
                 print("Failed to report user: \(error.localizedDescription)")

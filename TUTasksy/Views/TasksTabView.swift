@@ -23,14 +23,24 @@ struct TasksTabView: View {
                 .padding()
 
                 ScrollView {
-                    LazyVStack(spacing: 16) {
-                        ForEach(filteredTasks()) { task in
-                            TaskCardView(task: task)
+                    if filteredTasks().isEmpty {
+                        VStack {
+                            Spacer(minLength: 80)
+                            Text("No tasks available")
+                                .foregroundColor(.gray)
+                                .font(.title3)
+                                .padding()
+                            Spacer()
                         }
+                    } else {
+                        LazyVStack(spacing: 16) {
+                            ForEach(filteredTasks()) { task in
+                                TaskCardView(task: task)
+                            }
+                        }
+                        .padding()
                     }
-                    .padding()
                 }
-              //  .navigationTitle("My Tasks")
                 .navigationBarTitleDisplayMode(.inline)
             }
         }
