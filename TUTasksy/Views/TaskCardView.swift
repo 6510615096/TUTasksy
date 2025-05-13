@@ -19,6 +19,7 @@ struct TaskCardView: View {
     @State private var likeCount: Int = 0
     @State private var isUpdatingLike = false
     @State private var showFullImage = false
+    @State private var showDeleteAlert = false
 
 
     var body: some View {
@@ -68,6 +69,27 @@ struct TaskCardView: View {
                 }
 
                 Spacer()
+
+                if Auth.auth().currentUser?.uid == task.userId {
+                    Button(action: {
+                        showDeleteAlert = true
+                    }) {
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                            .padding(.trailing, 4)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .alert(isPresented: $showDeleteAlert) {
+                        Alert(
+                            title: Text("Delete Task"),
+                            message: Text("Are you sure you want to delete this task?"),
+                            primaryButton: .destructive(Text("Delete")) {
+                                deleteTask()
+                            },
+                            secondaryButton: .cancel()
+                        )
+                    }
+                }
 
                 Text(task.status)
                     .font(.caption)
@@ -266,7 +288,7 @@ struct TaskCardView: View {
             if let data = data, let image = UIImage(data: data) {
                 self.taskImage = image
             } else {
-                print("❌ ไม่สามารถโหลดภาพได้: \(error?.localizedDescription ?? "Unknown error")")
+                print("Download task image failed: \(error?.localizedDescription ?? "Unknown error")")
             }
         }
     }
@@ -353,7 +375,16 @@ struct TaskCardView: View {
         }
     }
 
-
+    private func deleteTask() {
+        let db = Firestore.firestore()
+        db.collection("tasks").document(task.id).delete { error in
+            if let error = error {
+                print("Failed to delete task: \(error.localizedDescription)")
+            } else {
+                print("Task deleted successfully")
+            }
+        }
+    }
 
     private func loadProfileImage(for userId: String) {
         guard !userId.isEmpty else { return }
