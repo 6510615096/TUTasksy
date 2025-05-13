@@ -5,6 +5,7 @@ struct Message: Identifiable, Equatable {
     let senderId: String
     let text: String
     let timestamp: Date
+    let imageUrl: String?
 }
 
 extension Message: Comparable {

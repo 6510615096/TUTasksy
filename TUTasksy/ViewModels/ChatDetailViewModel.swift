@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseStorage
 import FirebaseFirestore
 
 class ChatDetailViewModel: ObservableObject {
@@ -27,7 +28,8 @@ class ChatDetailViewModel: ObservableObject {
                         id: doc.documentID,
                         senderId: senderId,
                         text: text,
-                        timestamp: timestamp
+                        timestamp: timestamp,
+                        imageUrl: data["imageUrl"] as? String
                     )
                 }
 
@@ -84,6 +86,37 @@ class ChatDetailViewModel: ObservableObject {
                 "lastMessageTime": FieldValue.serverTimestamp(),
                 "lastSenderName": senderId
             ])
+        }
+    }
+
+    func sendImageMessage(chatId: String, senderId: String, image: UIImage) {
+        guard let imageData = image.jpegData(compressionQuality: 0.8) else { return }
+        let imageId = UUID().uuidString
+        let storageRef = Storage.storage().reference().child("chat_images/\(chatId)/\(imageId).jpg")
+        storageRef.putData(imageData, metadata: nil) { metadata, error in
+            if let error = error {
+                print("Upload error: \(error.localizedDescription)")
+                return
+            }
+            storageRef.downloadURL { url, error in
+                guard let url = url else { return }
+                let message: [String: Any] = [
+                    "senderId": senderId,
+                    "text": "",
+                    "timestamp": FieldValue.serverTimestamp(),
+                    "imageUrl": url.absoluteString
+                ]
+                let messagesRef = self.db.collection("chats").document(chatId).collection("messages")
+                messagesRef.addDocument(data: message) { error in
+                    if error == nil {
+                        self.db.collection("chats").document(chatId).updateData([
+                            "lastMessage": "[Image]",
+                            "lastMessageTime": FieldValue.serverTimestamp(),
+                            "lastSenderName": senderId
+                        ])
+                    }
+                }
+            }
         }
     }
 
