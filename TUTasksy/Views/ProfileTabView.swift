@@ -37,6 +37,7 @@ struct ProfileTabView: View {
             ScrollView {
                 VStack {
                     VStack {
+                        /*
                         HStack (spacing: 20) {
                             Spacer().frame(height: 50)
                             Button(action: {
@@ -54,8 +55,8 @@ struct ProfileTabView: View {
                                     .foregroundColor(.gray.opacity(0.5))
                             }
                             Spacer()
-                        }
-                        
+                        }*/
+                        Spacer()
                         PhotosPicker(selection: $selectedImage, matching: .images) {
                             ZStack {
                                 if let image = profileImage {

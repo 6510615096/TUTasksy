@@ -25,6 +25,7 @@ struct UserProfileView: View {
                 ZStack {
                     Text("User Profile")
                         .font(.title).fontWeight(.bold)
+                        .fontDesign(.rounded)
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
                     
@@ -94,6 +95,7 @@ struct UserProfileView: View {
                     }) {
                         Text("Report User")
                             .font(.headline).fontWeight(.bold)
+                            .fontDesign(.rounded)
                             .padding()
                             .frame(maxWidth: .infinity)
                             .foregroundColor(Color.red)
