@@ -35,18 +35,21 @@ struct LoginView: View {
                     VStack(spacing: 20) {
                         Text("TU Student ID")
                             .foregroundColor(Color(hex: "#C77A17"))
+                            .fontDesign(.rounded)
                             .font(.title2)
                             .fontWeight(.semibold)
                             .padding(.top)
 
                         TextField("Student ID", text: $studentid)
                             .padding()
+                            .fontDesign(.rounded)
                             .background(Color.white)
                             .cornerRadius(10)
 
                         Text("Password")
                             .foregroundColor(Color(hex: "#C77A17"))
                             .font(.title2)
+                            .fontDesign(.rounded)
                             .fontWeight(.semibold)
 
                         SecureField("Password", text: $password)

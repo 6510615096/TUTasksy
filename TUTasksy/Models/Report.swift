@@ -1,73 +1,27 @@
-//
-//  Report.swift
-//  TUTasksy
-//
-//  Created by นางสาวณัฐภูพิชา อรุณกรพสุรักษ์ on 13/5/2568 BE.
-//
-
 import Foundation
-import FirebaseFirestore
-import FirebaseAuth
+import SwiftUI
 
 struct Report: Identifiable {
-    var id: String           
-    var reportedUserId: String
-    var reporterUserId: String?
-    var reason: String?
-    var timestamp: Date?
-}
-
-class ReportManager {
+    let id: String
+    let reportedUserId: String
+    let reporterUserId: String?
+    let reason: String?
+    let timestamp: Date?
+    let status: ReportStatus
     
-    private let db = Firestore.firestore()
-
-    // Function to create a new report
-    func reportUser(reportedUserId: String, reason: String, completion: @escaping (Error?) -> Void) {
-        guard let reporterId = Auth.auth().currentUser?.uid else {
-            print("No user logged in.")
-            return
-        }
+    enum ReportStatus: String, CaseIterable {
+        case pending = "Pending"
+        case investigating = "Investigating"
+        case resolved = "Resolved"
+        case dismissed = "Dismissed"
         
-        let reportData: [String: Any] = [
-            "reportedUserId": reportedUserId,
-            "reportedBy": reporterId,
-            "reason": reason,
-            "timestamp": FieldValue.serverTimestamp()
-        ]
-        
-        print("Sending report data: \(reportData)")
-
-        db.collection("reports").addDocument(data: reportData) { error in
-            if let error = error {
-                print("Failed to submit report: \(error.localizedDescription)")
-                completion(error)
-            } else {
-                print("Report submitted successfully")
-                completion(nil)
+        var color: Color {
+            switch self {
+            case .pending: return .yellow
+            case .investigating: return .blue
+            case .resolved: return .green
+            case .dismissed: return .gray
             }
-        }
-    }
-    
-    // Function to fetch reports
-    func fetchReports(completion: @escaping ([Report]?, Error?) -> Void) {
-        db.collection("reports").getDocuments { snapshot, error in
-            if let error = error {
-                completion(nil, error)
-                return
-            }
-            
-            var reports: [Report] = []
-            for document in snapshot?.documents ?? [] {
-                let data = document.data()
-                let report = Report(
-                    id: document.documentID,
-                    reportedUserId: data["reportedUserId"] as? String ?? "",
-                    reporterUserId: data["reportedBy"] as? String,
-                    reason: data["reason"] as? String
-                )
-                reports.append(report)
-            }
-            completion(reports, nil)
         }
     }
 }
