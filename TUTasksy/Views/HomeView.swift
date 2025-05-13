@@ -46,95 +46,123 @@ enum Tab {
 }
 
 struct HomeView: View {
-    
     @State private var selectedTab: Tab = .home
     @State private var isAdmin: Bool = false
-    
+    @State private var isBanned: Bool = false
+    @AppStorage("isLoggedIn") var isLoggedIn: Bool = true
+
     init() {
-            let tabBarAppearance = UITabBarAppearance()
-            tabBarAppearance.configureWithOpaqueBackground()
-            tabBarAppearance.backgroundColor = UIColor(hex: "#CAE5FF")
+        let tabBarAppearance = UITabBarAppearance()
+        tabBarAppearance.configureWithOpaqueBackground()
+        tabBarAppearance.backgroundColor = UIColor(hex: "#CAE5FF")
 
-            UITabBar.appearance().standardAppearance = tabBarAppearance
+        UITabBar.appearance().standardAppearance = tabBarAppearance
 
-            if #available(iOS 15.0, *) {
-                UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
-            }
+        if #available(iOS 15.0, *) {
+            UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
         }
-    
+    }
+
     var headerTitle: String {
-           switch selectedTab {
-           case .home: return "HOME"
-           case .tasks: return "TASKS"
-           case .chats: return "CHATS"
-           case .profile: return "PROFILE"
-           case .admin: return "ADMIN REPORTS"
-           }
-       }
+        switch selectedTab {
+        case .home: return "HOME"
+        case .tasks: return "TASKS"
+        case .chats: return "CHATS"
+        case .profile: return "PROFILE"
+        case .admin: return "ADMIN REPORTS"
+        }
+    }
 
     var body: some View {
-            VStack(spacing: 0) {
-                HeaderView(title: headerTitle)
-                //Spacer()
-            }
-            //.ignoresSafeArea(edges: .top)
-        
-            // tab ข้างล่าง link ไปแต่ละหน้า
-            TabView(selection: $selectedTab) {
-                HomeTabView()
-                    .tabItem {
-                        Label("Home", systemImage: "house")
-                    }
-                    .tag(Tab.home)
-
-                TasksTabView()
-                    .tabItem {
-                        Label("Tasks", systemImage: "briefcase")
-                    }
-                    .tag(Tab.tasks)
-
-                if let user = Auth.auth().currentUser {
-                    ChatsTabView(currentUserId: user.uid)
-                        .tabItem {
-                            Label("Chats", systemImage: "ellipses.bubble")
+        VStack(spacing: 0) {
+            HeaderView(title: headerTitle)
+            if isBanned {
+                VStack {
+                    Spacer()
+                    Image(systemName: "hand.raised.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.red)
+                        .padding()
+                    Text("Your account was banned.\n Please contact the administrator.\n TUTasksy@gmail.com")
+                        .multilineTextAlignment(.center)
+                        .font(.title2)
+                        .foregroundColor(.red)
+                    Button(action: {
+                        do {
+                            try Auth.auth().signOut()
+                            isLoggedIn = false
+                        } catch let signOutError as NSError {
+                            print("Error signing out: %@", signOutError)
                         }
-                        .tag(Tab.chats)
-                } else {
-                    // Show login view or placeholder
-                    Text("Please log in to view chats.")
-                        .tabItem {
-                            Label("Chats", systemImage: "ellipses.bubble")
-                        }
-                        .tag(Tab.chats)
+                    
+                    }) {
+                        Text("Log Out")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.red)
+                            .cornerRadius(12)
+                            .padding(.horizontal, 40)
+                            .padding(.top, 16)
+                    }
+                    Spacer()
                 }
-                
-                if isAdmin {
-                    AdminReportsTabView()
+            } else {
+                TabView(selection: $selectedTab) {
+                    HomeTabView()
                         .tabItem {
-                            Label("Admin", systemImage: "shield")
+                            Label("Home", systemImage: "house")
                         }
-                        .tag(Tab.admin)
-                }
-
-                ProfileTabView()
-                    .tabItem {
-                        Label("Profile", systemImage: "person.crop.circle")
+                        .tag(Tab.home)
+                    TasksTabView()
+                        .tabItem {
+                            Label("Tasks", systemImage: "briefcase")
+                        }
+                        .tag(Tab.tasks)
+                    if let user = Auth.auth().currentUser {
+                        ChatsTabView(currentUserId: user.uid)
+                            .tabItem {
+                                Label("Chats", systemImage: "ellipses.bubble")
+                            }
+                            .tag(Tab.chats)
+                    } else {
+                        Text("Please log in to view chats.")
+                            .tabItem {
+                                Label("Chats", systemImage: "ellipses.bubble")
+                            }
+                            .tag(Tab.chats)
                     }
-                    .tag(Tab.profile)
-            }
-            .accentColor(Color(hex: "#C77A17"))
-            .onAppear {
-                checkIfAdmin()
+                    if isAdmin {
+                        AdminReportsTabView()
+                            .tabItem {
+                                Label("Admin", systemImage: "shield")
+                            }
+                            .tag(Tab.admin)
+                    }
+                    ProfileTabView()
+                        .tabItem {
+                            Label("Profile", systemImage: "person.crop.circle")
+                        }
+                        .tag(Tab.profile)
+                }
+                .accentColor(Color(hex: "#C77A17"))
             }
         }
-    private func checkIfAdmin() {
-        guard let user = Auth.auth().currentUser else { return }
+        .onAppear {
+            checkIfAdminAndBanned()
+        }
+    }
 
+    private func checkIfAdminAndBanned() {
+        guard let user = Auth.auth().currentUser else { return }
         let db = Firestore.firestore()
         db.collection("users").document(user.uid).getDocument { document, error in
             if let document = document, document.exists {
                 let isAdmin = document.data()?["admin"] as? Bool ?? false
+                let isBanned = document.data()?["isBanned"] as? Bool ?? false
                 self.isAdmin = isAdmin
+                self.isBanned = isBanned
             }
         }
     }
