@@ -115,10 +115,7 @@ struct TaskCardView: View {
                             .clipped()
                             .cornerRadius(12)
                             .onTapGesture {
-                                
-                                    onImageTab(imageUrl)
-                                    showFullImage = true
-                                
+                                showFullImage = true
                             }
                     } else if isLoadingTaskImage {
                         ProgressView()

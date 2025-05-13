@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import FirebaseStorage
 
 struct FullImageView: View {
     let imageUrl: String
@@ -34,22 +35,24 @@ struct FullImageView: View {
             }
         }
         .onAppear {
-            loadImage(from: imageUrl)
+            loadImageFromFirebaseStorage(urlString: imageUrl)
         }
     }
 
-    private func loadImage(from urlString: String) {
-        guard let url = URL(string: urlString) else { return }
-
+    private func loadImageFromFirebaseStorage(urlString: String) {
+        guard !urlString.isEmpty else {
+            isLoading = false
+            return
+        }
         isLoading = true
-        URLSession.shared.dataTask(with: url) { data, response, error in
+        let storageRef = Storage.storage().reference(forURL: urlString)
+        storageRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
             DispatchQueue.main.async {
                 if let data = data, let uiImage = UIImage(data: data) {
-                    image = uiImage
+                    self.image = uiImage
                 }
-                isLoading = false
+                self.isLoading = false
             }
         }
-        .resume()
     }
 }
