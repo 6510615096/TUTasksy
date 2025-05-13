@@ -108,7 +108,7 @@ class LoginViewModel: ObservableObject {
             "department": userInfo.department,
             "faculty": userInfo.faculty,
             "createdAt": FieldValue.serverTimestamp()
-        ]) { error in
+        ], merge: true) { error in
             DispatchQueue.main.async {
                 if let error = error {
                     self.loginMessage = "Firestore error: \(error.localizedDescription)"

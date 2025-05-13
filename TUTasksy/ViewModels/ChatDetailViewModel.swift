@@ -3,6 +3,7 @@ import FirebaseFirestore
 
 class ChatDetailViewModel: ObservableObject {
     @Published var messages: [Message] = []
+    @Published var contactName: String = ""
     
     private var db = Firestore.firestore()
     private var listener: ListenerRegistration?
@@ -34,6 +35,33 @@ class ChatDetailViewModel: ObservableObject {
                     self?.messages = newMessages
                 }
             }
+    }
+    
+    func fetchContactName(chatId: String, currentUserId: String) {
+        db.collection("chats").document(chatId).getDocument { [weak self] document, error in
+            guard let data = document?.data(),
+                let users = data["users"] as? [String],
+                let otherUserId = users.first(where: { $0 != currentUserId }) else {
+                return
+            }
+            self?.getUserName(userId: otherUserId)
+        }
+    }
+    
+    private func getUserName(userId: String) {
+        db.collection("profiles").document(userId).getDocument { [weak self] document, error in
+            if let document = document,
+                let data = document.data(),
+                let nickname = data["nickname"] as? String {
+                DispatchQueue.main.async {
+                    self?.contactName = nickname
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self?.contactName = "Unknown User"
+                }
+            }
+        }
     }
 
     func sendMessage(chatId: String, senderId: String, text: String) {

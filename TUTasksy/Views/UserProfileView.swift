@@ -11,14 +11,39 @@ struct UserProfileView: View {
     @State private var bio: String = ""
     @State private var isLoading = true
     @State private var navigateToChats = false
+    @State private var showReportAlert = false
 
 
     @State private var selectedChatId: String? = nil
     @AppStorage("currentUserId") var currentUserId: String = ""
+    
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
+                ZStack {
+                    Text("User Profile")
+                        .font(.title).fontWeight(.bold)
+                        .frame(maxWidth: .infinity)
+                        .multilineTextAlignment(.center)
+                    
+                    HStack {
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "chevron.left")
+                                Text("Back")
+                            }
+                            .foregroundStyle(.blue)
+                        }
+                        .padding(.leading)
+                        Spacer()
+                    }
+                }
+                Spacer()
+                
                 if let image = profileImage {
                     Image(uiImage: image)
                         .resizable()
@@ -36,6 +61,7 @@ struct UserProfileView: View {
                                 : AnyView(Text(nickname.prefix(1)).font(.largeTitle).foregroundColor(.white))
                         )
                 }
+                Spacer()
 
                 Text(nickname)
                     .font(.title)
@@ -44,15 +70,17 @@ struct UserProfileView: View {
                 Text(bio)
                     .font(.body)
                     .foregroundColor(.secondary)
+                
+                Spacer()
 
                 if userId != currentUserId {
                     Button(action: startChat) {
                         Text("Chat")
-                            .font(.headline)
-                            .foregroundColor(.white)
+                            .font(.headline).fontWeight(.bold)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(Color.blue)
+                            .foregroundColor(Color(hex: "#C77A17"))
+                            .background(Color(hex: "#FFE7E4"))
                             .cornerRadius(12)
                     }
                     .padding(.top)
@@ -60,22 +88,44 @@ struct UserProfileView: View {
                         EmptyView()
                     }
                     .hidden()
-
+                    
+                    Button(action: {
+                        self.showReportAlert = true
+                    }) {
+                        Text("Report User")
+                            .font(.headline).fontWeight(.bold)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .foregroundColor(Color.red)
+                            .background(Color(hex: "#E7E7E7"))
+                            .cornerRadius(12)
+                    }
+                    
+                    .alert(isPresented: $showReportAlert) {
+                        Alert(
+                            title: Text("Report User"),
+                            message: Text("Are you sure you want to report this user?"),
+                            primaryButton: .destructive(Text("Report")) {
+                                reportUser()
+                            },
+                            secondaryButton: .cancel()
+                        )
+                    }
                 }
 
                 Spacer()
             }
             .padding()
-            .navigationTitle("User Profile")
+            .background(Color(hex: "#FFFAED"))
             .onAppear(perform: fetchProfile)
             .onAppear {
-                        if let user = Auth.auth().currentUser {
-                            print("Setting currentUserId: \(user.uid)")
-                            currentUserId = user.uid
-                        } else {
-                            print("No user is logged in.")
-                        }
-                    }
+                if let user = Auth.auth().currentUser {
+                    print("Setting currentUserId: \(user.uid)")
+                    currentUserId = user.uid
+                } else {
+                    print("No user is logged in.")
+                }
+            }
         }
     }
 
@@ -143,6 +193,19 @@ struct UserProfileView: View {
 
                 }
             }
+    }
+    
+    private func reportUser() {
+        let reportManager = ReportManager()
+
+        let reason = "Inappropriate behavior"
+        reportManager.reportUser(reportedUserId: userId, reason: reason) { error in
+            if let error = error {
+                print("Failed to report user: \(error.localizedDescription)")
+            } else {
+                print("Report submitted successfully")
+            }
+        }
     }
 
 }

@@ -5,6 +5,9 @@ import FirebaseAuth
 
 struct TaskCardView: View {
     let task: TaskCard
+    var onImageTab: (String) -> Void = { _ in }
+    var imageUrl: String = ""
+
     @State private var isPressed = false
     @State private var showCommentPanel = false
     @State private var taskImage: UIImage? = nil
@@ -15,6 +18,7 @@ struct TaskCardView: View {
     @State private var isLiked: Bool = false
     @State private var likeCount: Int = 0
     @State private var isUpdatingLike = false
+    @State private var showFullImage = false
 
 
     var body: some View {
@@ -101,7 +105,7 @@ struct TaskCardView: View {
                 .font(.caption)
                 .foregroundColor(.blue)
 
-            if let imageUrl = task.imageUrl {
+            if let imageUrl = task.imageUrl, !imageUrl.isEmpty {
                 ZStack {
                     if let taskImage = taskImage {
                         Image(uiImage: taskImage)
@@ -110,6 +114,12 @@ struct TaskCardView: View {
                             .frame(height: 200)
                             .clipped()
                             .cornerRadius(12)
+                            .onTapGesture {
+                                
+                                    onImageTab(imageUrl)
+                                    showFullImage = true
+                                
+                            }
                     } else if isLoadingTaskImage {
                         ProgressView()
                             .frame(height: 200)
@@ -122,6 +132,9 @@ struct TaskCardView: View {
                     loadTaskImage(from: imageUrl)
                 }
                 .padding(.vertical, 4)
+                .sheet(isPresented: $showFullImage) {
+                    FullImageView(imageUrl: imageUrl)
+                }
             }
 
             HStack {
@@ -255,6 +268,8 @@ struct TaskCardView: View {
             isLoadingTaskImage = false
             if let data = data, let image = UIImage(data: data) {
                 self.taskImage = image
+            } else {
+                print("❌ ไม่สามารถโหลดภาพได้: \(error?.localizedDescription ?? "Unknown error")")
             }
         }
     }
@@ -373,7 +388,6 @@ struct TaskCardView: View {
         return formatter.string(from: date)
     }
 }
-
 
 /*
  #Preview {

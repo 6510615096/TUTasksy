@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAuth
 
 struct ChatDetailView: View {
     @ObservedObject var viewModel = ChatDetailViewModel()
@@ -30,8 +31,6 @@ struct ChatDetailView: View {
                         }
                     }
                 }
-
-
             }
             
             // ส่วนที่พิมพ์ส่งแต่ละ message bubble
@@ -47,7 +46,12 @@ struct ChatDetailView: View {
             }
             .padding()
         }
-        .onAppear { viewModel.fetchMessages(chatId: chatId) }
+        .navigationTitle(viewModel.contactName.isEmpty ? "Loading..." : viewModel.contactName)
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            viewModel.fetchMessages(chatId: chatId)
+            viewModel.fetchContactName(chatId: chatId, currentUserId: currentUserId)
+        }
         .onDisappear { viewModel.detachListener() }
     }
 }

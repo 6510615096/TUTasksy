@@ -7,6 +7,9 @@ struct HomeTabView: View {
     @StateObject private var viewModel = TaskViewModel()
     @State private var showCreateTask = false
     
+    @State private var selectdImageURL: String? = nil
+    @State private var showFullImage = false
+    
     var body: some View {
         ZStack {
             Color(.white)
@@ -15,7 +18,10 @@ struct HomeTabView: View {
                 ScrollView {
                     VStack(spacing: 16) {
                         ForEach(viewModel.tasks) { task in
-                            TaskCardView(task: task)
+                            TaskCardView(task: task, onImageTab: { imageUrl in
+                                selectdImageURL = imageUrl
+                                showFullImage = true
+                            })
                         }
                     }
                     .padding()
@@ -45,6 +51,19 @@ struct HomeTabView: View {
         }
         .sheet(isPresented: $showCreateTask) {
             CreateTaskView()
+        }
+        .sheet(isPresented: $showFullImage) {
+            if let imageUrl = selectdImageURL, !imageUrl.isEmpty {
+                FullImageView(imageUrl: imageUrl)
+                    .onAppear {
+                        print("🔍 เปิด FullImageView")
+                }
+            } else {
+                Text("ไม่พบ URL ของภาพ")
+                    .onAppear {
+                        print("⚠️ imageUrl เป็น nil")
+                    }
+            }
         }
         .onAppear {
             viewModel.fetchTasks()

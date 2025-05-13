@@ -1,5 +1,6 @@
 import SwiftUI
 import FirebaseAuth
+import FirebaseFirestore
 import UIKit
 
 extension UIColor {
@@ -41,12 +42,13 @@ struct HeaderView: View {
 }
 
 enum Tab {
-    case home, tasks, chats, profile
+    case home, tasks, chats, profile, admin
 }
 
 struct HomeView: View {
     
     @State private var selectedTab: Tab = .home
+    @State private var isAdmin: Bool = false
     
     init() {
             let tabBarAppearance = UITabBarAppearance()
@@ -66,6 +68,7 @@ struct HomeView: View {
            case .tasks: return "TASKS"
            case .chats: return "CHATS"
            case .profile: return "PROFILE"
+           case .admin: return "ADMIN REPORTS"
            }
        }
 
@@ -104,6 +107,14 @@ struct HomeView: View {
                         }
                         .tag(Tab.chats)
                 }
+                
+                if isAdmin {
+                    AdminReportsTabView()
+                        .tabItem {
+                            Label("Admin", systemImage: "shield")
+                        }
+                        .tag(Tab.admin)
+                }
 
                 ProfileTabView()
                     .tabItem {
@@ -112,7 +123,21 @@ struct HomeView: View {
                     .tag(Tab.profile)
             }
             .accentColor(Color(hex: "#C77A17"))
+            .onAppear {
+                checkIfAdmin()
+            }
         }
+    private func checkIfAdmin() {
+        guard let user = Auth.auth().currentUser else { return }
+
+        let db = Firestore.firestore()
+        db.collection("users").document(user.uid).getDocument { document, error in
+            if let document = document, document.exists {
+                let isAdmin = document.data()?["admin"] as? Bool ?? false
+                self.isAdmin = isAdmin
+            }
+        }
+    }
 }
 
 #Preview {
