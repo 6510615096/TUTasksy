@@ -9,4 +9,4 @@
 
 Demo: https://youtu.be/JaNucmcH77k
 
-![](https://github.com/6510615096/TUTasksy/blob/main/7.jpg)
+![](https://github.com/6510615096/TUTasksy/blob/main/7.png)
